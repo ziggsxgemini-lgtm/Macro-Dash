@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Institutional Macro Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0b0f19; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .glass { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        input[type=range] { -webkit-appearance: none; background: #1e293b; border-radius: 8px; height: 8px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #38bdf8; cursor: pointer; }
+    </style>
+</head>
+<body class="p-4 md:p-8 max-w-5xl mx-auto pb-12">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="inline-block w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                MACRO DESK TERMINAL
+            </h1>
+            <p class="text-xs text-slate-400">Phases 1–4 Liquidity & Credit Alignment</p>
+        </div>
+        <div id="bias-badge" class="px-3 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            BULLISH TAILWIND
+        </div>
+    </div>
+
+    <!-- Top Stats Row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="glass p-3.5 rounded-xl">
+            <span class="text-xs text-slate-400 block mb-1">Net Fed Liquidity</span>
+            <span id="stat-net-liq" class="text-lg font-bold text-white">$6,150B</span>
+            <span id="stat-net-change" class="text-[10px] text-emerald-400 block mt-0.5">+1.2% 30d</span>
+        </div>
+        <div class="glass p-3.5 rounded-xl">
+            <span class="text-xs text-slate-400 block mb-1">HY Credit Spread</span>
+            <span id="stat-credit" class="text-lg font-bold text-white">3.40%</span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">Risk-On Threshold <4.0%</span>
+        </div>
+        <div class="glass p-3.5 rounded-xl">
+            <span class="text-xs text-slate-400 block mb-1">10Y Real Yield</span>
+            <span id="stat-yield" class="text-lg font-bold text-white">1.95%</span>
+            <span class="text-[10px] text-amber-400 block mt-0.5">Valuation Pressure</span>
+        </div>
+        <div class="glass p-3.5 rounded-xl">
+            <span class="text-xs text-slate-400 block mb-1">Implied Equity Model</span>
+            <span id="stat-spx" class="text-lg font-bold text-sky-400">FAIR VALUE</span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">Based on Net Liquidity</span>
+        </div>
+    </div>
+
+    <!-- Main Chart Section -->
+    <div class="glass p-4 rounded-xl mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-sm font-semibold text-slate-200">Net Liquidity vs. Equity Index Fair Value Projection</h2>
+            <span class="text-[11px] text-slate-400">Correlation: ~0.84</span>
+        </div>
+        <div class="h-64 relative">
+            <canvas id="macroChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Controls / Simulation Sliders -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Phase 1: Policy Controls -->
+        <div class="glass p-4 rounded-xl space-y-4">
+            <h3 class="text-xs font-bold text-sky-400 uppercase tracking-wider">Phase 1: Central Bank Balance Sheet</h3>
+            
+            <div>
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="text-slate-300">Fed Total Assets ($B)</span>
+                    <span id="val-assets" class="font-mono text-sky-400">$7,100</span>
+                </div>
+                <input type="range" id="input-assets" min="6000" max="9000" value="7100" class="w-full">
+            </div>
+
+            <div>
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="text-slate-300">Treasury General Acct - TGA ($B)</span>
+                    <span id="val-tga" class="font-mono text-sky-400">$750</span>
+                </div>
+                <input type="range" id="input-tga" min="200" max="1200" value="750" class="w-full">
+            </div>
+
+            <div>
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="text-slate-300">Reverse Repo Facility - RRP ($B)</span>
+                    <span id="val-rrp" class="font-mono text-sky-400">$200</span>
+                </div>
+                <input type="range" id="input-rrp" min="0" max="1500" value="200" class="w-full">
+            </div>
+        </div>
+
+        <!-- Phase 4: Credit & Spreads Controls -->
+        <div class="glass p-4 rounded-xl space-y-4">
+            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-wider">Phase 4: Credit Market Spreads</h3>
+            
+            <div>
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="text-slate-300">High Yield OAS Spread (%)</span>
+                    <span id="val-credit" class="font-mono text-purple-400">3.40%</span>
+                </div>
+                <input type="range" id="input-credit" min="2.0" max="8.0" step="0.1" value="3.4" class="w-full">
+            </div>
+
+            <div>
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="text-slate-300">10-Year Real Yield (%)</span>
+                    <span id="val-yield" class="font-mono text-purple-400">1.95%</span>
+                </div>
+                <input type="range" id="input-yield" min="0.5" max="3.5" step="0.05" value="1.95" class="w-full">
+            </div>
+
+            <div class="p-3 bg-slate-900/50 rounded-lg border border-slate-800 text-xs text-slate-400 mt-2">
+                <span class="text-white font-medium">Macro Desk Rule:</span> If High Yield Spreads widen above 4.5% while Net Liquidity contracts, reduce equity long exposure regardless of technical charts.
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        // Chart Initialization
+        const ctx = document.getElementById('macroChart').getContext('2d');
+        const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Current (Implied)'];
+        
+        let netLiquidityData = [5800, 5850, 5900, 5880, 5950, 6020, 6080, 6100, 6120, 6150];
+        let equityFairValue = [4800, 4880, 4950, 4920, 5050, 5200, 5350, 5400, 5450, 5500];
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Net Fed Liquidity ($B)',
+                        data: netLiquidityData,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        borderWidth: 2,
+                        yAxisID: 'y1',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Implied Equity Value (S&P)',
+                        data: equityFairValue,
+                        borderColor: '#c084fc',
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        yAxisID: 'y2',
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                    y1: { type: 'linear', position: 'left', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#38bdf8' } },
+                    y2: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#c084fc' } }
+                }
+            }
+        });
+
+        // Interactive Math Updates
+        function updateDashboard() {
+            const assets = parseFloat(document.getElementById('input-assets').value);
+            const tga = parseFloat(document.getElementById('input-tga').value);
+            const rrp = parseFloat(document.getElementById('input-rrp').value);
+            const credit = parseFloat(document.getElementById('input-credit').value);
+            const realYield = parseFloat(document.getElementById('input-yield').value);
+
+            // Calculate Net Liquidity
+            const netLiquidity = assets - (tga + rrp);
+
+            // Display Values
+            document.getElementById('val-assets').innerText = '$' + assets.toLocaleString();
+            document.getElementById('val-tga').innerText = '$' + tga.toLocaleString();
+            document.getElementById('val-rrp').innerText = '$' + rrp.toLocaleString();
+            document.getElementById('val-credit').innerText = credit.toFixed(2) + '%';
+            document.getElementById('val-yield').innerText = realYield.toFixed(2) + '%';
+
+            document.getElementById('stat-net-liq').innerText = '$' + netLiquidity.toLocaleString() + 'B';
+            document.getElementById('stat-credit').innerText = credit.toFixed(2) + '%';
+            document.getElementById('stat-yield').innerText = realYield.toFixed(2) + '%';
+
+            // Calculate Implied Fair Value Model
+            const impliedSPX = Math.round(3000 + (netLiquidity * 0.42) - (credit * 80) - (realYield * 50));
+            document.getElementById('stat-spx').innerText = impliedSPX.toLocaleString();
+
+            // Update Chart Last Point
+            chart.data.datasets[0].data[9] = netLiquidity;
+            chart.data.datasets[1].data[9] = impliedSPX;
+            chart.update('none');
+
+            // Bias Indicator Logic
+            const badge = document.getElementById('bias-badge');
+            if (netLiquidity > 6100 && credit < 4.0) {
+                badge.innerText = 'BULLISH TAILWIND';
+                badge.className = 'px-3 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+            } else if (netLiquidity < 5800 || credit > 4.5) {
+                badge.innerText = 'BEARISH HEADWIND';
+                badge.className = 'px-3 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase bg-rose-500/10 text-rose-400 border border-rose-500/20';
+            } else {
+                badge.innerText = 'NEUTRAL / CAUTION';
+                badge.className = 'px-3 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20';
+            }
+        }
+
+        // Attach Event Listeners
+        ['input-assets', 'input-tga', 'input-rrp', 'input-credit', 'input-yield'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateDashboard);
+        });
+
+        updateDashboard();
+    </script>
+</body>
+</html>
